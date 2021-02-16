@@ -3,6 +3,7 @@ const { normalizeErrors } = require('../../helper/mongoose');
 const jwt = require('jsonwebtoken');
 const config = require('../../config/dev')
 const bcrypt = require('bcrypt');
+const nodemailer = require('nodemailer')
 
 
 
@@ -87,37 +88,6 @@ exports.Login = function (req, res) {
         if (!user) {
             return res.status(422).send({ errors: [{ title: 'Invalid User', details: 'User does not exist' }] });
         }
-
-        //     if (!user) {
-        //         return res.status(422).send({
-        //             errors: [
-        //                 { title: "Invalid User", details: "Please Check Email or Password" }
-        //             ]
-        //         });
-        //     }
-        //     return res.json({ success: true, data: user._id });
-        // });
-        // bcrypt.compare(req.body.password, hash, function (err, res) {
-        //     if (res == true) {
-        //         console.log("password", res)
-        //         res.json({ msg: "Update is successfull", res });
-
-        //     }
-        // });
-
-        // bcrypt.hash(req.body.password, 10, function (err, hash) {
-        //     console.log(hash);
-
-        // });
-
-        // bcrypt.compare(req.body.password, '$2b$10$yO7wnQETdjG2JcZkaD.x5OzCUBEu6lP6aVF4gy4octEKNgLjWvTjW', function (err, res) {
-        //     if (res) {
-        //         console.log('Your password mached with database hash password', res.password);
-        //     } else {
-        //         console.log('Your password not mached.');
-        //     }
-        // });
-
         if (user.hasSamePasswrod(password)) {
 
             const token = jwt.sign({
@@ -125,12 +95,14 @@ exports.Login = function (req, res) {
                 email: user.email
             }, config.SECRET, { expiresIn: '1h' });
 
-            return res.json({ msg: 'succes', token: token, id: user._id });
+            return res.json({ msg: 'succes', token: token, id: user._id, status: user.isActived });
         } else {
             res.status(422).send({ errors: [{ title: 'Wrong Data', details: 'Wrong email or password' }] });
         }
     });
 }
+
+
 exports.UserGet = function (req, res) {
     User.findById({ _id: req.params.id })
         .select('fname')
@@ -141,6 +113,7 @@ exports.UserGet = function (req, res) {
             res.json(foundCou);
         });
 }
+
 
 
 
@@ -203,7 +176,31 @@ exports.CourseGet = function (req, res) {
         });
 }
 
+exports.SendMail = function (req, res) {
+    res.json("I am sending a mail ");
+    var transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'sarfaroj04@gmail.com',
+            pass: 'Sarf@1990'
+        }
+    })
 
+    var mailOptions = {
+        from: 'sarfaroj04@gmail.com',
+        to: 'sarfaroj95@gmail.com',
+        subject: "Sending mail",
+        text: `I am first time experiment`
+    }
+    transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+            console.log(error)
+        } else {
+            console.log("email send" + info.response)
+        }
+    })
+
+}
 
 
 
